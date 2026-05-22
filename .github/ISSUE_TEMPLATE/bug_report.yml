@@ -1,0 +1,98 @@
+name: Bug report
+description: Report something that isn't working correctly
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve HyPack. Please search [existing issues](https://github.com/blushell/HyPack/issues) first to avoid duplicates.
+
+  - type: dropdown
+    id: bug-environment
+    attributes:
+      label: Where did this happen?
+      options:
+        - Production (hypack.ca)
+        - Local development
+        - Both
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+      placeholder: When I try to export a modpack, the download fails with…
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug-steps
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce this?
+      placeholder: |
+        1. Sign in
+        2. Open modpack settings
+        3. Click Export
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug-expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug-actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened?
+    validations:
+      required: true
+
+  - type: input
+    id: bug-modpack
+    attributes:
+      label: Modpack URL or ID (if relevant)
+      placeholder: https://www.hypack.ca/modpacks/… or modpack UUID
+
+  - type: input
+    id: bug-browser
+    attributes:
+      label: Browser and version
+      placeholder: Chrome 124, Firefox 125, etc.
+
+  - type: input
+    id: bug-os
+    attributes:
+      label: OS
+      placeholder: Windows 11, macOS 14, etc.
+
+  - type: textarea
+    id: bug-logs
+    attributes:
+      label: Console or server logs
+      description: Paste any relevant errors from the browser console or terminal.
+      render: shell
+
+  - type: checkboxes
+    id: bug-checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues for duplicates
+          required: true
+        - label: I am running a current version of HyPack
+          required: true
+
+  - type: textarea
+    id: bug-extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, screen recordings, or other context.

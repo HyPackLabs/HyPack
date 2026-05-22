@@ -1,0 +1,40 @@
+@import "tailwindcss";
+@source "../lib/clerk-appearance.ts";
+@import "../styles/clerk-overrides.css";
+
+:root {
+  --background: #080808;
+  --foreground: #fafafa;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+::selection {
+  background: rgba(139, 92, 246, 0.35);
+  color: white;
+}
+
+/* Keep dark inputs dark when browser autofill is applied */
+.input-dark:-webkit-autofill,
+.input-dark:-webkit-autofill:hover,
+.input-dark:-webkit-autofill:focus,
+.input-dark:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #111111 inset;
+  -webkit-text-fill-color: #fafafa;
+  caret-color: #fafafa;
+  transition: background-color 99999s ease-out 0s;
+}

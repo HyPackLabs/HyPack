@@ -1,0 +1,34 @@
+/* OAuth buttons — violet tint to match HyPack */
+.hypack-clerk [data-variant="outline"],
+.hypack-clerk .cl-socialButtonsBlockButton,
+.hypack-clerk .cl-socialButtonsIconButton {
+  background-color: rgba(124, 58, 237, 0.1) !important;
+  border: 1px solid rgba(139, 92, 246, 0.25) !important;
+  color: #fafafa !important;
+  box-shadow: none !important;
+}
+
+.hypack-clerk [data-variant="outline"]:hover,
+.hypack-clerk .cl-socialButtonsBlockButton:hover,
+.hypack-clerk .cl-socialButtonsIconButton:hover {
+  background-color: rgba(124, 58, 237, 0.15) !important;
+  border-color: rgba(167, 139, 250, 0.4) !important;
+}
+
+.hypack-clerk .cl-socialButtonsBlockButtonText {
+  color: #fafafa !important;
+  font-weight: 500 !important;
+}
+
+.hypack-clerk .cl-socialButtonsBlockButton__github img,
+.hypack-clerk .cl-socialButtonsIconButton__github img,
+.hypack-clerk [class*="github"] img,
+.hypack-clerk [class*="github"] svg {
+  filter: brightness(0) invert(1) !important;
+}
+
+.hypack-clerk .cl-socialButtonsBlockButton__google img,
+.hypack-clerk .cl-socialButtonsIconButton__google img,
+.hypack-clerk [class*="google"] img {
+  filter: none !important;
+}
