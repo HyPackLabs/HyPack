@@ -177,6 +177,11 @@ export function ModpackModsForm({
 			setSelectedMods((current) =>
 				applyDependencyResolution(current, mod, resolution)
 			);
+			setSearchQuery('');
+			setDebouncedQuery('');
+			setSearchResults([]);
+			setSearchError(null);
+			setIsSearching(false);
 		} catch {
 			setAddError('Could not add mod. Try again.');
 		} finally {
