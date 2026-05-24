@@ -1,8 +1,7 @@
 import JSZip from "jszip";
 import { isCurseForgeConfigured } from "@/lib/curseforge/client";
 import {
-  downloadModFileBuffer,
-  getModFileDownloadUrl,
+  downloadModFile,
 } from "@/lib/curseforge/download-mod-file";
 import { getModLatestFiles } from "@/lib/curseforge/get-mod-latest-files";
 import {
@@ -65,9 +64,7 @@ export async function exportModpackZip(
       }
 
       try {
-        const downloadUrl =
-          file.downloadUrl ?? (await getModFileDownloadUrl(modId, file.fileId));
-        const fileBuffer = await downloadModFileBuffer(downloadUrl);
+        const fileBuffer = await downloadModFile(modId, file.fileId, file.fileName);
         const validation = await validateModArchive(fileBuffer, file.fileName);
 
         if (!validation.ok) {

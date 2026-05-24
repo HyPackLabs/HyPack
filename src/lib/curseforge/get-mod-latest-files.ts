@@ -112,7 +112,15 @@ export async function getModLatestFiles(
         return;
       }
 
-      const moduleNames = await fetchFileModuleNames(mod.id, file.id);
+      const moduleNames = await fetchFileModuleNames(mod.id, file.id).catch(
+        (error) => {
+          console.error(
+            `Failed to fetch module names for mod ${mod.id} file ${file.id}:`,
+            error,
+          );
+          return [];
+        },
+      );
       const mapped = toLatestFile(mod, file, moduleNames);
       if (mapped) {
         latestFiles.set(mod.id, mapped);
