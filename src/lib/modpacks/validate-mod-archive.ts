@@ -2,6 +2,7 @@ import JSZip from "jszip";
 
 const ALLOWED_MOD_EXTENSIONS = new Set([".jar", ".zip"]);
 
+// Reverse-engineering / decompiler database artifacts that should never ship in a mod.
 const BLOCKED_EXTENSIONS = new Set([
   ".gpr",
   ".rep",
@@ -13,10 +14,6 @@ const BLOCKED_EXTENSIONS = new Set([
   ".id2",
   ".nam",
   ".til",
-  ".bak",
-  ".tmp",
-  ".log",
-  ".iml",
 ]);
 
 const BLOCKED_PATH_PATTERNS = [
@@ -153,5 +150,5 @@ export function formatModArchiveValidationError(
   const fileList = suspiciousFiles.join(", ");
   const overflow = suspiciousFiles.length >= 8 ? " (showing first 8)" : "";
 
-  return `"${modName}" contains non-mod files: ${fileList}${overflow}. Remove it from the pack or report the upload on CurseForge.`;
+  return `"${modName}" contains developer tool artifacts: ${fileList}${overflow}. Remove it from the pack or report the upload on CurseForge.`;
 }
