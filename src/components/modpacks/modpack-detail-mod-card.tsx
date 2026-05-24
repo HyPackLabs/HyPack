@@ -1,17 +1,23 @@
 import Image from "next/image";
 import { CheckCircle2, Download, ExternalLink } from "lucide-react";
+import { RequiredForBadges } from "@/components/modpacks/required-for-badges";
 import type { CurseForgeModSummary } from "@/lib/curseforge/types";
 import { formatDownloads } from "@/lib/modpacks/format-downloads";
 
 type ModpackDetailModCardProps = {
   mod: CurseForgeModSummary;
   layout: "list" | "grid";
+  requiredForNames?: string[];
 };
 
 const cardClass =
   "rounded-xl border border-white/5 bg-[#111111] transition hover:border-white/10 hover:bg-[#141414]";
 
-export function ModpackDetailModCard({ mod, layout }: ModpackDetailModCardProps) {
+export function ModpackDetailModCard({
+  mod,
+  layout,
+  requiredForNames = [],
+}: ModpackDetailModCardProps) {
   if (layout === "grid") {
     return (
       <article className={`flex h-full flex-col p-5 ${cardClass}`}>
@@ -55,6 +61,11 @@ export function ModpackDetailModCard({ mod, layout }: ModpackDetailModCardProps)
           CurseForge
           <ExternalLink className="h-3.5 w-3.5" />
         </a>
+        {requiredForNames.length > 0 ? (
+          <div className="mt-3">
+            <RequiredForBadges names={requiredForNames} />
+          </div>
+        ) : null}
       </article>
     );
   }
@@ -94,6 +105,11 @@ export function ModpackDetailModCard({ mod, layout }: ModpackDetailModCardProps)
             CurseForge
             <ExternalLink className="h-3.5 w-3.5" />
           </a>
+          {requiredForNames.length > 0 ? (
+            <div className="mt-3">
+              <RequiredForBadges names={requiredForNames} />
+            </div>
+          ) : null}
         </div>
 
         <div className="shrink-0 space-y-2 text-sm text-zinc-500 sm:text-right">

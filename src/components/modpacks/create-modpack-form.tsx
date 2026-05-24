@@ -12,11 +12,11 @@ export function CreateModpackForm() {
       showIconPicker
       submitLabel="Save modpack"
       footerHint="You can add or change mods later."
-      onSave={async ({ title, modIds, iconSelection }) => {
+      onSave={async ({ title, modIds, iconSelection, dependencyState }) => {
         const response = await fetch("/api/modpacks", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, modIds }),
+          body: JSON.stringify({ title, modIds, dependencyState }),
         });
 
         const payload = (await response.json()) as {
@@ -39,7 +39,6 @@ export function CreateModpackForm() {
         }
 
         router.push("/modpacks");
-        router.refresh();
         return { ok: true };
       }}
     />

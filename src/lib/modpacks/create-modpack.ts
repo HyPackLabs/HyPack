@@ -2,10 +2,19 @@ import {
   createServerSupabaseClient,
   isSupabaseConfigured,
 } from "@/lib/supabase/server";
+import {
+  isMissingDependencyStateColumn,
+  DEPENDENCY_STATE_COLUMN_ERROR,
+} from "@/lib/modpacks/modpack-dependency-state-db";
+import {
+  sanitizePackDependencyState,
+  type PackDependencyState,
+} from "@/lib/modpacks/mod-dependency-selection";
 
 export type CreateModpackInput = {
   title: string;
   modIds: number[];
+  dependencyState?: PackDependencyState | null;
 };
 
 export type CreateModpackResult =
@@ -26,15 +35,38 @@ export async function createModpack(
   }
 
   const supabase = createServerSupabaseClient();
+  const dependencyState = sanitizePackDependencyState(
+    input.modIds,
+    input.dependencyState,
+  );
 
-  const { data: modpack, error: modpackError } = await supabase
+  const baseInsert = {
+    clerk_user_id: userId,
+    title,
+  };
+
+  let modpack:
+    | {
+        id: string;
+      }
+    | null = null;
+  let modpackError: { message?: string } | null = null;
+
+  const insertWithDependency = await supabase
     .from("modpacks")
     .insert({
-      clerk_user_id: userId,
-      title,
+      ...baseInsert,
+      dependency_state: dependencyState,
     })
     .select("id")
     .single();
+
+  modpack = insertWithDependency.data;
+  modpackError = insertWithDependency.error;
+
+  if (modpackError && isMissingDependencyStateColumn(modpackError)) {
+    return { ok: false, error: DEPENDENCY_STATE_COLUMN_ERROR };
+  }
 
   if (modpackError || !modpack) {
     console.error("Failed to create modpack:", modpackError?.message);

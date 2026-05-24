@@ -14,6 +14,7 @@ import {
 	mergeDirectRequiredDepsMaps,
 	mergeRequiredByMaps,
 	pruneDependencyMaps,
+	type PackDependencyState,
 } from '@/lib/modpacks/mod-dependency-selection';
 
 const SEARCH_DEBOUNCE_MS = 350;
@@ -27,6 +28,7 @@ type IconSelection = {
 type ModpackModsFormProps = {
 	initialTitle?: string;
 	initialSelectedMods?: CurseForgeModSummary[];
+	initialDependencyState?: PackDependencyState;
 	showTitleField?: boolean;
 	showIconPicker?: boolean;
 	submitLabel: string;
@@ -36,12 +38,14 @@ type ModpackModsFormProps = {
 		title?: string;
 		modIds: number[];
 		iconSelection: IconSelection;
+		dependencyState: PackDependencyState;
 	}) => Promise<{ ok: true } | { ok: false; error: string }>;
 };
 
 export function ModpackModsForm({
 	initialTitle = '',
 	initialSelectedMods = [],
+	initialDependencyState,
 	showTitleField = true,
 	showIconPicker = false,
 	submitLabel,
@@ -62,12 +66,16 @@ export function ModpackModsForm({
 	const [selectedMods, setSelectedMods] =
 		useState<CurseForgeModSummary[]>(initialSelectedMods);
 	const [userAddedModIds, setUserAddedModIds] = useState<number[]>(() =>
-		initialSelectedMods.map((mod) => mod.id)
+		initialDependencyState
+			? initialDependencyState.userAddedModIds
+			: initialSelectedMods.map((mod) => mod.id)
 	);
-	const [requiredBy, setRequiredBy] = useState<Record<number, number[]>>({});
+	const [requiredBy, setRequiredBy] = useState<Record<number, number[]>>(
+		() => initialDependencyState?.requiredBy ?? {}
+	);
 	const [directRequiredDeps, setDirectRequiredDeps] = useState<
 		Record<number, number[]>
-	>({});
+	>(() => initialDependencyState?.directRequiredDeps ?? {});
 	const [addingModId, setAddingModId] = useState<number | null>(null);
 	const [addError, setAddError] = useState<string | null>(null);
 	const [isSearching, setIsSearching] = useState(false);
@@ -231,6 +239,11 @@ export function ModpackModsForm({
 				...(showTitleField ? { title: trimmedTitle } : {}),
 				modIds: selectedMods.map((mod) => mod.id),
 				iconSelection,
+				dependencyState: {
+					requiredBy,
+					directRequiredDeps,
+					userAddedModIds,
+				},
 			});
 
 			if (!result.ok) {

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Trash2 } from "lucide-react";
 import { CurseForgeModLink } from "@/components/modpacks/curseforge-mod-link";
+import { RequiredForBadges } from "@/components/modpacks/required-for-badges";
 import type { CurseForgeModSummary } from "@/lib/curseforge/types";
 import { formatDownloads } from "@/lib/modpacks/format-downloads";
 
@@ -42,16 +43,8 @@ export function SelectedModRow({
           <CurseForgeModLink slug={mod.slug} />
         </div>
         {requiredForNames.length > 0 ? (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {requiredForNames.map((name) => (
-              <span
-                key={name}
-                className="inline-flex max-w-full items-center rounded-md bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-200 ring-1 ring-amber-400/20"
-                title={`Required for ${name}`}
-              >
-                <span className="truncate">Required for {name}</span>
-              </span>
-            ))}
+          <div className="mt-2">
+            <RequiredForBadges names={requiredForNames} />
           </div>
         ) : null}
       </div>

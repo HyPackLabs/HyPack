@@ -10,6 +10,8 @@ create table if not exists public.modpacks (
   visibility text not null default 'Private'
     check (visibility in ('Private', 'Unlisted', 'Public')),
   icon_url text,
+  -- Stored required-mod tags (requiredBy, directRequiredDeps, userAddedModIds)
+  dependency_state jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -26,6 +28,9 @@ create table if not exists public.modpack_mods (
 
 create index if not exists modpacks_clerk_user_id_idx on public.modpacks (clerk_user_id);
 create index if not exists modpack_mods_modpack_id_idx on public.modpack_mods (modpack_id);
+
+-- Backfill for databases created before dependency_state existed
+alter table public.modpacks add column if not exists dependency_state jsonb;
 
 -- Modpack likes (one per user per modpack)
 create table if not exists public.modpack_likes (

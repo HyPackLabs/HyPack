@@ -7,6 +7,12 @@ import { EditModpackPageContent } from "@/components/modpacks/edit-modpack-page-
 import { getModsByIds } from "@/lib/curseforge/get-mods-by-ids";
 import { isCurseForgeConfigured } from "@/lib/curseforge/client";
 import { getModpackDetail } from "@/lib/modpacks/get-modpack-detail";
+import {
+  backfillModpackDependencyState,
+  loadStoredModpackDependencyState,
+} from "@/lib/modpacks/resolve-modpack-dependency-state";
+import { EMPTY_PACK_DEPENDENCY_STATE } from "@/lib/modpacks/mod-dependency-selection";
+import type { PackDependencyState } from "@/lib/modpacks/mod-dependency-selection";
 import type { ModpackVisibility } from "@/lib/modpacks/types";
 
 type ModpackEditPageProps = {
@@ -45,13 +51,30 @@ export default async function ModpackEditPage({ params }: ModpackEditPageProps) 
   }
 
   let initialMods: Awaited<ReturnType<typeof getModsByIds>> = [];
-  if (isCurseForgeConfigured() && modpack.modIds.length > 0) {
+  let initialDependencyState: PackDependencyState = EMPTY_PACK_DEPENDENCY_STATE;
+
+  if (modpack.modIds.length > 0) {
     try {
-      const fetched = await getModsByIds(modpack.modIds);
-      const byId = new Map(fetched.map((mod) => [mod.id, mod]));
-      initialMods = modpack.modIds
-        .map((modId) => byId.get(modId))
-        .filter((mod): mod is NonNullable<typeof mod> => mod !== undefined);
+      if (isCurseForgeConfigured()) {
+        const fetched = await getModsByIds(modpack.modIds);
+        const byId = new Map(fetched.map((mod) => [mod.id, mod]));
+        initialMods = modpack.modIds
+          .map((modId) => byId.get(modId))
+          .filter((mod): mod is NonNullable<typeof mod> => mod !== undefined);
+      }
+
+      if (modpack.dependencyState === null && isCurseForgeConfigured()) {
+        initialDependencyState = await backfillModpackDependencyState(
+          userId,
+          modpack.id,
+          modpack.modIds,
+        );
+      } else {
+        initialDependencyState = loadStoredModpackDependencyState(
+          modpack.modIds,
+          modpack.dependencyState,
+        );
+      }
     } catch (error) {
       console.error("Failed to load mod details:", error);
     }
@@ -87,7 +110,11 @@ export default async function ModpackEditPage({ params }: ModpackEditPageProps) 
           </header>
 
           <div className="mt-8">
-            <EditModpackPageContent modpack={modpack} initialMods={initialMods} />
+            <EditModpackPageContent
+              modpack={modpack}
+              initialMods={initialMods}
+              initialDependencyState={initialDependencyState}
+            />
           </div>
         </div>
       </main>

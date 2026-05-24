@@ -20,6 +20,8 @@ import {
 	Trash2,
 } from 'lucide-react';
 import type { CurseForgeModSummary } from '@/lib/curseforge/types';
+import { getRequiredForNames } from '@/lib/modpacks/mod-dependency-selection';
+import type { PackDependencyState } from '@/lib/modpacks/mod-dependency-selection';
 import type { ModpackDetail } from '@/lib/modpacks/types';
 import { ModpackDetailModCard } from '@/components/modpacks/modpack-detail-mod-card';
 import { ModpackIcon } from '@/components/modpacks/modpack-icon';
@@ -28,6 +30,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 type ModpackDetailViewProps = {
 	modpack: ModpackDetail;
 	mods: CurseForgeModSummary[];
+	dependencyState: PackDependencyState;
 	isSignedIn: boolean;
 };
 
@@ -127,10 +130,12 @@ function PrimaryGroupButton({
 export function ModpackDetailView({
 	modpack,
 	mods,
+	dependencyState,
 	isSignedIn,
 }: ModpackDetailViewProps) {
 	const router = useRouter();
 	const [layout, setLayout] = useState<'list' | 'grid'>('list');
+	const modNameById = new Map(mods.map((mod) => [mod.id, mod.name]));
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 	const [isDuplicating, setIsDuplicating] = useState(false);
@@ -475,7 +480,15 @@ export function ModpackDetailView({
 					>
 						{mods.map((mod) => (
 							<li key={mod.id}>
-								<ModpackDetailModCard mod={mod} layout={layout} />
+								<ModpackDetailModCard
+									mod={mod}
+									layout={layout}
+									requiredForNames={getRequiredForNames(
+										mod.id,
+										dependencyState.requiredBy,
+										modNameById,
+									)}
+								/>
 							</li>
 						))}
 					</ul>

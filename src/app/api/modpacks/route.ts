@@ -1,10 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { createModpack } from "@/lib/modpacks/create-modpack";
+import type { PackDependencyState } from "@/lib/modpacks/mod-dependency-selection";
 
 type CreateModpackBody = {
   title?: string;
   modIds?: number[];
+  dependencyState?: PackDependencyState | null;
 };
 
 export async function POST(request: Request) {
@@ -25,7 +27,11 @@ export async function POST(request: Request) {
     ? body.modIds.filter((id): id is number => typeof id === "number")
     : [];
 
-  const result = await createModpack(userId, { title, modIds });
+  const result = await createModpack(userId, {
+    title,
+    modIds,
+    dependencyState: body.dependencyState ?? null,
+  });
 
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: 400 });

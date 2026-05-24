@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CurseForgeModSummary } from "@/lib/curseforge/types";
 import type { ModpackDetail } from "@/lib/modpacks/types";
+import type { PackDependencyState } from "@/lib/modpacks/mod-dependency-selection";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EditModpackForm } from "@/components/modpacks/edit-modpack-form";
 import { ModpackOwnerNav } from "@/components/modpacks/modpack-owner-nav";
@@ -11,11 +12,13 @@ import { ModpackOwnerNav } from "@/components/modpacks/modpack-owner-nav";
 type EditModpackPageContentProps = {
   modpack: ModpackDetail;
   initialMods: CurseForgeModSummary[];
+  initialDependencyState?: PackDependencyState;
 };
 
 export function EditModpackPageContent({
   modpack,
   initialMods,
+  initialDependencyState,
 }: EditModpackPageContentProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -78,6 +81,7 @@ export function EditModpackPageContent({
         <EditModpackForm
           modpackId={modpack.id}
           initialMods={initialMods}
+          initialDependencyState={initialDependencyState}
         />
       </div>
     </>

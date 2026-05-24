@@ -2,10 +2,19 @@ import {
   createServerSupabaseClient,
   isSupabaseConfigured,
 } from "@/lib/supabase/server";
+import {
+  DEPENDENCY_STATE_COLUMN_ERROR,
+  updateModpackDependencyState,
+} from "@/lib/modpacks/modpack-dependency-state-db";
+import {
+  sanitizePackDependencyState,
+  type PackDependencyState,
+} from "@/lib/modpacks/mod-dependency-selection";
 
 export type UpdateModpackContentInput = {
   title?: string;
   modIds: number[];
+  dependencyState?: PackDependencyState | null;
 };
 
 export type UpdateModpackContentResult =
@@ -30,6 +39,10 @@ export async function updateModpackContent(
   const modIds = input.modIds.filter(
     (id): id is number => Number.isInteger(id) && id > 0,
   );
+  const dependencyState = sanitizePackDependencyState(
+    modIds,
+    input.dependencyState,
+  );
 
   const supabase = createServerSupabaseClient();
 
@@ -47,16 +60,41 @@ export async function updateModpackContent(
     return { ok: false, error: "Modpack not found." };
   }
 
+  const modpackUpdates: { title?: string } = {};
+
   if (title !== undefined) {
+    modpackUpdates.title = title;
+  }
+
+  if (Object.keys(modpackUpdates).length > 0) {
     const { error: updateError } = await supabase
       .from("modpacks")
-      .update({ title })
+      .update(modpackUpdates)
       .eq("id", modpackId)
       .eq("clerk_user_id", userId);
 
     if (updateError) {
-      console.error("Failed to update modpack title:", updateError.message);
+      console.error("Failed to update modpack:", updateError.message);
       return { ok: false, error: "Could not save modpack. Try again." };
+    }
+  }
+
+  if (input.dependencyState !== undefined) {
+    const dependencyResult = await updateModpackDependencyState(
+      supabase,
+      modpackId,
+      userId,
+      dependencyState,
+    );
+
+    if (!dependencyResult.ok) {
+      return {
+        ok: false,
+        error:
+          dependencyResult.error === "column_missing"
+            ? DEPENDENCY_STATE_COLUMN_ERROR
+            : "Could not save modpack. Try again.",
+      };
     }
   }
 

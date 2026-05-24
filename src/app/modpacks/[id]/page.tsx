@@ -9,6 +9,7 @@ import { getModsByIds } from "@/lib/curseforge/get-mods-by-ids";
 import { isCurseForgeConfigured } from "@/lib/curseforge/client";
 import { getModpackDetailForViewer } from "@/lib/modpacks/get-modpack-detail";
 import { getModpackDetailBackLink } from "@/lib/modpacks/modpack-detail-navigation";
+import { loadStoredModpackDependencyState } from "@/lib/modpacks/resolve-modpack-dependency-state";
 
 type ModpackDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -57,6 +58,11 @@ export default async function ModpackDetailPage({
     }
   }
 
+  const dependencyState = loadStoredModpackDependencyState(
+    modpack.modIds,
+    modpack.dependencyState,
+  );
+
   return (
     <div className="flex min-h-full flex-col bg-[#080808]">
       <Header />
@@ -75,6 +81,7 @@ export default async function ModpackDetailPage({
             <ModpackDetailView
               modpack={modpack}
               mods={mods}
+              dependencyState={dependencyState}
               isSignedIn={Boolean(userId)}
             />
           </div>

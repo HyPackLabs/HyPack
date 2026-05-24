@@ -3,6 +3,8 @@ import {
   isSupabaseConfigured,
 } from "@/lib/supabase/server";
 import { formatCreatedDate } from "@/lib/modpacks/format-created-date";
+import { isMissingDependencyStateColumn } from "@/lib/modpacks/modpack-dependency-state-db";
+import { parsePackDependencyState } from "@/lib/modpacks/mod-dependency-selection";
 import { getModpackLikeState } from "@/lib/modpacks/toggle-modpack-like";
 import type { ModpackDetail, ModpackVisibility } from "@/lib/modpacks/types";
 
@@ -14,8 +16,32 @@ type ModpackDetailRow = {
   created_at: string;
   clerk_user_id: string;
   icon_url: string | null;
+  dependency_state?: unknown;
   modpack_mods: { curseforge_mod_id: number; sort_order: number }[] | null;
 };
+
+const MODPACK_DETAIL_SELECT = `
+  id,
+  title,
+  description,
+  visibility,
+  created_at,
+  clerk_user_id,
+  icon_url,
+  dependency_state,
+  modpack_mods ( curseforge_mod_id, sort_order )
+`;
+
+const MODPACK_DETAIL_SELECT_LEGACY = `
+  id,
+  title,
+  description,
+  visibility,
+  created_at,
+  clerk_user_id,
+  icon_url,
+  modpack_mods ( curseforge_mod_id, sort_order )
+`;
 
 export async function getModpackDetailForViewer(
   viewerUserId: string | null,
@@ -27,22 +53,19 @@ export async function getModpackDetailForViewer(
 
   const supabase = createServerSupabaseClient();
 
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("modpacks")
-    .select(
-      `
-      id,
-      title,
-      description,
-      visibility,
-      created_at,
-      clerk_user_id,
-      icon_url,
-      modpack_mods ( curseforge_mod_id, sort_order )
-    `,
-    )
+    .select(MODPACK_DETAIL_SELECT)
     .eq("id", modpackId)
     .maybeSingle();
+
+  if (error && isMissingDependencyStateColumn(error)) {
+    ({ data, error } = await supabase
+      .from("modpacks")
+      .select(MODPACK_DETAIL_SELECT_LEGACY)
+      .eq("id", modpackId)
+      .maybeSingle());
+  }
 
   if (error || !data) {
     if (error) {
@@ -76,6 +99,7 @@ export async function getModpackDetailForViewer(
     modIds: mods.map((mod) => mod.curseforge_mod_id),
     isOwner,
     iconUrl: row.icon_url,
+    dependencyState: parsePackDependencyState(row.dependency_state),
   };
 }
 

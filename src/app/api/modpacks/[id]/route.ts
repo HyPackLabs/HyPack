@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { deleteModpack } from "@/lib/modpacks/delete-modpack";
 import { updateModpack } from "@/lib/modpacks/update-modpack";
 import { updateModpackContent } from "@/lib/modpacks/update-modpack-content";
+import type { PackDependencyState } from "@/lib/modpacks/mod-dependency-selection";
 import type { ModpackVisibility } from "@/lib/modpacks/types";
 
 type RouteContext = {
@@ -14,6 +15,7 @@ type UpdateModpackBody = {
   description?: string;
   visibility?: ModpackVisibility;
   modIds?: number[];
+  dependencyState?: PackDependencyState | null;
 };
 
 export async function PATCH(request: Request, context: RouteContext) {
@@ -37,6 +39,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       modIds: body.modIds.filter(
         (modId): modId is number => typeof modId === "number" && Number.isInteger(modId),
       ),
+      dependencyState: body.dependencyState ?? null,
     });
 
     if (!result.ok) {

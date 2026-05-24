@@ -1,3 +1,5 @@
+import type { PackDependencyState } from "@/lib/modpacks/mod-dependency-selection";
+
 export type ModpackVisibility = "Private" | "Unlisted" | "Public";
 
 export type ModpackCreator = {
@@ -34,4 +36,5 @@ export type ModpackDetail = {
   modIds: number[];
   isOwner: boolean;
   iconUrl: string | null;
+  dependencyState: PackDependencyState | null;
 };

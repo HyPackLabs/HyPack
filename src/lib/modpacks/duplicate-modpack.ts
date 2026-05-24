@@ -3,6 +3,10 @@ import {
   isSupabaseConfigured,
 } from "@/lib/supabase/server";
 import type { CreateModpackResult } from "@/lib/modpacks/create-modpack";
+import {
+  fetchModpackDependencyState,
+  isMissingDependencyStateColumn,
+} from "@/lib/modpacks/modpack-dependency-state-db";
 import type { ModpackVisibility } from "@/lib/modpacks/types";
 import { copyModpackIcon } from "@/lib/modpacks/upload-modpack-icon";
 
@@ -59,17 +63,40 @@ export async function duplicateModpack(
   const mods = [...(source.modpack_mods ?? [])].sort(
     (a, b) => a.sort_order - b.sort_order,
   );
+  const dependencyState = await fetchModpackDependencyState(supabase, source.id);
 
-  const { data: modpack, error: modpackError } = await supabase
+  const baseInsert = {
+    clerk_user_id: userId,
+    title: `${source.title} (Copy)`,
+    description: source.description,
+    visibility: isOwner ? source.visibility : "Private",
+  };
+
+  let modpack: { id: string } | null = null;
+  let modpackError: { message?: string } | null = null;
+
+  const insertWithDependency = await supabase
     .from("modpacks")
     .insert({
-      clerk_user_id: userId,
-      title: `${source.title} (Copy)`,
-      description: source.description,
-      visibility: isOwner ? source.visibility : "Private",
+      ...baseInsert,
+      dependency_state: dependencyState,
     })
     .select("id")
     .single();
+
+  modpack = insertWithDependency.data;
+  modpackError = insertWithDependency.error;
+
+  if (modpackError && isMissingDependencyStateColumn(modpackError)) {
+    const insertWithoutDependency = await supabase
+      .from("modpacks")
+      .insert(baseInsert)
+      .select("id")
+      .single();
+
+    modpack = insertWithoutDependency.data;
+    modpackError = insertWithoutDependency.error;
+  }
 
   if (modpackError || !modpack) {
     console.error("Failed to duplicate modpack:", modpackError?.message);
