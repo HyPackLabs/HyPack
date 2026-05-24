@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import type { CurseForgeModSummary } from "@/lib/curseforge/types";
 import type { PackDependencyState } from "@/lib/modpacks/mod-dependency-selection";
 import { ModpackModsForm } from "@/components/modpacks/modpack-mods-form";
@@ -16,14 +15,13 @@ export function EditModpackForm({
   initialMods,
   initialDependencyState,
 }: EditModpackFormProps) {
-  const router = useRouter();
-
   return (
     <ModpackModsForm
       showTitleField={false}
       initialSelectedMods={initialMods}
       initialDependencyState={initialDependencyState}
       submitLabel="Save changes"
+      saveSuccessMessage="Changes saved."
       footerHint="Changes apply to the mod list only. Edit the title in settings."
       onSave={async ({ modIds, iconSelection, dependencyState }) => {
         void iconSelection;
@@ -39,7 +37,6 @@ export function EditModpackForm({
           return { ok: false, error: payload.error ?? "Could not save modpack." };
         }
 
-        router.push(`/modpacks/${modpackId}`);
         return { ok: true };
       }}
     />

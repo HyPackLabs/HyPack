@@ -34,6 +34,7 @@ type ModpackModsFormProps = {
 	submitLabel: string;
 	savingLabel?: string;
 	footerHint?: string;
+	saveSuccessMessage?: string;
 	onSave: (input: {
 		title?: string;
 		modIds: number[];
@@ -51,6 +52,7 @@ export function ModpackModsForm({
 	submitLabel,
 	savingLabel = 'Saving…',
 	footerHint,
+	saveSuccessMessage,
 	onSave,
 }: ModpackModsFormProps) {
 	const [title, setTitle] = useState(initialTitle);
@@ -82,6 +84,7 @@ export function ModpackModsForm({
 	const [searchError, setSearchError] = useState<string | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
 	const [saveError, setSaveError] = useState<string | null>(null);
+	const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
 	const addedModIds = useMemo(
 		() => new Set(selectedMods.map((mod) => mod.id)),
@@ -225,6 +228,7 @@ export function ModpackModsForm({
 
 	async function handleSave() {
 		setSaveError(null);
+		setSaveMessage(null);
 
 		const trimmedTitle = title.trim();
 		if (showTitleField && !trimmedTitle) {
@@ -248,6 +252,8 @@ export function ModpackModsForm({
 
 			if (!result.ok) {
 				setSaveError(result.error);
+			} else if (saveSuccessMessage) {
+				setSaveMessage(saveSuccessMessage);
 			}
 		} catch {
 			setSaveError('Could not save modpack. Try again.');
@@ -389,6 +395,9 @@ export function ModpackModsForm({
 			</section>
 
 			{saveError ? <p className="text-sm text-red-400">{saveError}</p> : null}
+			{saveMessage ? (
+				<p className="text-sm text-emerald-400">{saveMessage}</p>
+			) : null}
 
 			<div className="flex flex-wrap items-center gap-4 border-t border-white/5 pt-8">
 				<button

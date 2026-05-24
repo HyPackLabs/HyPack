@@ -38,7 +38,7 @@ export function CreateModpackForm() {
           }
         }
 
-        router.push("/modpacks");
+        router.push(`/modpacks/${payload.modpackId}/edit`);
         return { ok: true };
       }}
     />
