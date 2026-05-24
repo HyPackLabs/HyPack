@@ -27,8 +27,9 @@ const BLOCKED_PATH_PATTERNS = [
   /^node_modules(\/|$)/i,
   /^\.gradle(\/|$)/i,
   /^\.vs(\/|$)/i,
-  /^target(\/|$)/i,
-  /^build(\/|$)/i,
+  /^target\//i,
+  /^build\//i,
+  /^build$/i,
   /\/\.DS_Store$/i,
   /^Thumbs\.db$/i,
   /^desktop\.ini$/i,
@@ -43,6 +44,36 @@ function getFileExtension(fileName: string): string {
   return dotIndex >= 0 ? fileName.slice(dotIndex).toLowerCase() : "";
 }
 
+function isZipArchiveBuffer(buffer: Buffer): boolean {
+  return (
+    buffer.length >= 4 &&
+    buffer[0] === 0x50 &&
+    buffer[1] === 0x4b &&
+    (buffer[2] === 0x03 || buffer[2] === 0x05 || buffer[2] === 0x07) &&
+    (buffer[3] === 0x04 || buffer[3] === 0x06 || buffer[3] === 0x08)
+  );
+}
+
+type ModFileKind = "jar" | "zip" | "invalid";
+
+function resolveModFileKind(fileName: string, buffer: Buffer): ModFileKind {
+  const extension = getFileExtension(fileName);
+
+  if (extension === ".jar") {
+    return "jar";
+  }
+
+  if (extension === ".zip") {
+    return "zip";
+  }
+
+  if (isZipArchiveBuffer(buffer)) {
+    return "zip";
+  }
+
+  return "invalid";
+}
+
 function isSuspiciousArchivePath(path: string): boolean {
   const extension = getFileExtension(path);
   if (BLOCKED_EXTENSIONS.has(extension)) {
@@ -52,25 +83,24 @@ function isSuspiciousArchivePath(path: string): boolean {
   return BLOCKED_PATH_PATTERNS.some((pattern) => pattern.test(path));
 }
 
-function validateModFileName(fileName: string): string[] {
+function validateModFileName(fileName: string, buffer: Buffer): string[] {
   const extension = getFileExtension(fileName);
 
   if (BLOCKED_EXTENSIONS.has(extension)) {
     return [fileName];
   }
 
-  if (!ALLOWED_MOD_EXTENSIONS.has(extension)) {
+  if (resolveModFileKind(fileName, buffer) === "invalid") {
     return [`unsupported mod file type "${extension || "none"}"`];
   }
 
   return [];
 }
 
-export async function validateModArchive(
+async function validateJarContents(
   buffer: Buffer,
-  fileName: string,
-): Promise<ModArchiveValidationResult> {
-  const suspiciousFiles = validateModFileName(fileName);
+): Promise<string[]> {
+  const suspiciousFiles: string[] = [];
 
   try {
     const archive = await JSZip.loadAsync(buffer);
@@ -88,11 +118,21 @@ export async function validateModArchive(
       }
     }
   } catch {
-    if (suspiciousFiles.length > 0) {
-      return { ok: false, suspiciousFiles: [...new Set(suspiciousFiles)] };
-    }
+    // Unreadable plugin archives are rejected upstream by the game client.
+  }
 
-    return { ok: true };
+  return suspiciousFiles;
+}
+
+export async function validateModArchive(
+  buffer: Buffer,
+  fileName: string,
+): Promise<ModArchiveValidationResult> {
+  const suspiciousFiles = validateModFileName(fileName, buffer);
+  const modFileKind = resolveModFileKind(fileName, buffer);
+
+  if (modFileKind === "jar") {
+    suspiciousFiles.push(...(await validateJarContents(buffer)));
   }
 
   const uniqueSuspiciousFiles = [...new Set(suspiciousFiles)];

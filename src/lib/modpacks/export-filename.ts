@@ -23,6 +23,31 @@ function getFileBaseName(fileName: string): string {
   return dotIndex >= 0 ? fileName.slice(0, dotIndex) : fileName;
 }
 
+function isZipArchiveBuffer(buffer: Buffer): boolean {
+  return (
+    buffer.length >= 4 &&
+    buffer[0] === 0x50 &&
+    buffer[1] === 0x4b &&
+    (buffer[2] === 0x03 || buffer[2] === 0x05 || buffer[2] === 0x07) &&
+    (buffer[3] === 0x04 || buffer[3] === 0x06 || buffer[3] === 0x08)
+  );
+}
+
+export function ensureModExportFileName(
+  fileName: string,
+  buffer: Buffer,
+): string {
+  if (getFileExtension(fileName)) {
+    return fileName;
+  }
+
+  if (isZipArchiveBuffer(buffer)) {
+    return `${fileName}.zip`;
+  }
+
+  return fileName;
+}
+
 export function getUniqueZipEntryName(
   fileName: string,
   modSlug: string,

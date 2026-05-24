@@ -13,6 +13,7 @@ import {
   buildReadme,
   EXPORT_MODS_FOLDER,
   EXPORT_README_FILENAME,
+  ensureModExportFileName,
   getUniqueZipEntryName,
   sanitizeExportFilename,
 } from "@/lib/modpacks/export-filename";
@@ -77,7 +78,7 @@ export async function exportModpackZip(
         }
 
         const modFileName = getUniqueZipEntryName(
-          file.fileName,
+          ensureModExportFileName(file.fileName, fileBuffer),
           file.modSlug,
           usedModNames,
         );
