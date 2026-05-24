@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Trash2 } from "lucide-react";
+import { CurseForgeModLink } from "@/components/modpacks/curseforge-mod-link";
 import type { CurseForgeModSummary } from "@/lib/curseforge/types";
 import { formatDownloads } from "@/lib/modpacks/format-downloads";
 
@@ -37,6 +38,9 @@ export function SelectedModRow({
         <p className="mt-0.5 text-xs text-zinc-500">
           {formatDownloads(mod.downloadCount)} downloads
         </p>
+        <div className="mt-1.5">
+          <CurseForgeModLink slug={mod.slug} />
+        </div>
         {requiredForNames.length > 0 ? (
           <div className="mt-2 flex flex-wrap gap-1.5">
             {requiredForNames.map((name) => (

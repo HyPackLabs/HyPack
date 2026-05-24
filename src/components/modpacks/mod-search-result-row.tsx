@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Loader2, Plus } from "lucide-react";
+import { CurseForgeModLink } from "@/components/modpacks/curseforge-mod-link";
 import type { CurseForgeModSummary } from "@/lib/curseforge/types";
 import { formatDownloads } from "@/lib/modpacks/format-downloads";
 
@@ -46,6 +47,9 @@ export function ModSearchResultRow({
         <p className="mt-1 text-xs text-zinc-600">
           {formatDownloads(mod.downloadCount)} downloads
         </p>
+        <div className="mt-1.5">
+          <CurseForgeModLink slug={mod.slug} />
+        </div>
       </div>
 
       <button
